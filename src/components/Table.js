@@ -1,28 +1,44 @@
 import { useEffect, useState } from "react";
 import { Dropdown } from "./Dropdown";
+import { AddModal } from "./AddModal";
+import { TableModal } from "./TableModal";
 
 export const Table = (props) => {
-  const { list } = props;
+  const { list, update, tableType } = props;
 
+  const [isOpen, setIsOpen] = useState(false);
   const [rows, setRows] = useState([]);
+  const [editValue, setEditValue] = useState({});
+
+  const handleUpdate = (data) => {
+    setEditValue(data);
+    setIsOpen(true);
+  };
+
   useEffect(() => {
-    console.log(list);
     setRows(list);
   }, [list]);
 
   return (
     <div className="rounded container p-2 mx-auto sm:p-4 bg-white">
-      <h2 className="mb-4 text-2xl font-semibold leading-tight">Lists</h2>
+      <div className="flex justify-between">
+        <h2 className="mb-4 text-2xl font-semibold leading-tight">Lists</h2>
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="px-5 hover:bg-slate-300 font-semibold border rounded"
+        >
+          Add
+        </button>
+      </div>
+
       <div className="overflow-x-auto">
         <table className="w-full p-6 text-xs text-left whitespace-nowrap">
           <thead>
             <tr className="">
-              <th className="p-3">#</th>
-              <th className="p-3">Name</th>
-              <th className="p-3">Job title</th>
-              <th className="p-3">Phone</th>
-              <th className="p-3">Email</th>
-              <th className="p-3">Address</th>
+              {list.length > 0 &&
+                Object.keys(list[0]).map((key) => <th key={key}>{key}</th>)}
+              {/* ['name', 'price', 'imgSrc'] */}
               <th className="p-3">
                 <span className="sr-only">Edit</span>
               </th>
@@ -31,25 +47,19 @@ export const Table = (props) => {
           <tbody className="border-b">
             {rows?.map((data, index) => (
               <tr key={`table-row-${index}`}>
-                <td className="px-3 text-2xl font-medium">A</td>
-                <td className="px-3 py-2">
-                  <p>{data.test}</p>
-                </td>
-                <td className="px-3 py-2">
-                  <span>{data.nvd}</span>
-                </td>
-                <td className="px-3 py-2">
-                  <p>555-873-9812</p>
-                </td>
-                <td className="px-3 py-2">
-                  <p>dwight@adams.com</p>
-                </td>
-                <td className="px-3 py-2">
-                  <p>71 Cherry Court, SO</p>
-                </td>
+                {Object.entries(data).map(([key, value]) => (
+                  <td key={key} className="px-3 text-2xl">
+                    {key === "imgSrc" ? <img src={value} /> : value}
+                  </td>
+                ))}
                 <td className="px-3 py-2">
                   <div className="relative pb-8">
-                    <Dropdown />
+                    <Dropdown
+                      items={["Edit", "Delete"]}
+                      id={data.id}
+                      update={() => handleUpdate(data)}
+                      delete={(id) => props.delete(id)}
+                    />
                   </div>
                 </td>
               </tr>
@@ -57,6 +67,18 @@ export const Table = (props) => {
           </tbody>
         </table>
       </div>
+      <TableModal
+        isOpen={isOpen}
+        toggleModal={(status) => setIsOpen(status)}
+        editValue={editValue}
+        updateValue={(data) => update(data)}
+      />
+      <AddModal
+        isOpen={isOpen}
+        toggleModal={(status) => setIsOpen(status)}
+        create={(data) => props.create(data)}
+        tableType={tableType}
+      />
     </div>
   );
 };

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 // Ustgah hereggvi. Firebase tohiruulsan heseg. Credentials can be in env file for security reasons
 import { initializeApp } from "firebase/app";
-import { Modal } from "./components/Modal";
 import { Header } from "./components/Header";
 
 import { getAnalytics } from "firebase/analytics";
@@ -12,8 +11,13 @@ import {
   getDocs,
   query,
   collection,
+  deleteDoc,
+  setDoc,
+  addDoc,
+  updateDoc,
 } from "firebase/firestore";
 import { Table } from "./components/Table";
+import Sidebar from "./components/Sidebar";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAp98ZLrNuaGzMWv53xewmGTsRrNVybp_g",
@@ -31,33 +35,97 @@ getAnalytics(app);
 const db = getFirestore();
 
 function App() {
-  const [list, setList] = useState([]);
-  const [newData, setNewData] = useState();
+  const [userList, setUserList] = useState([]);
+  const [productList, setProductList] = useState([]);
+  const [tableType, setTableType] = useState("users");
 
   const getData = async () => {
-    const testRef = query(collection(db, "test"));
-    const testSnapshot = await getDocs(testRef);
-    const testList = testSnapshot.docs.map((doc) => {
-      const id = doc.id;
-      return {
-        id,
-        ...doc.data(),
-      };
-    });
-    setList(testList);
+    if (tableType === "users") {
+      const usersRef = query(collection(db, "users"));
+      const usersSnapshot = await getDocs(usersRef);
+      const userList = usersSnapshot.docs.map((doc) => {
+        const id = doc.id;
+        return {
+          id,
+          ...doc.data(),
+        };
+      });
+      setUserList(userList);
+      return;
+    } else if (tableType === "products") {
+      const productsRef = query(collection(db, "products"));
+      const productsSnapshot = await getDocs(productsRef);
+      const productList = productsSnapshot.docs.map((doc) => {
+        const id = doc.id;
+        return {
+          id,
+          ...doc.data(),
+        };
+      });
+      setProductList(productList);
+      return;
+    }
   };
 
-  const handleCreate = () => {
-    console.log(newData);
+  const deleteData = async (id) => {
+    const res = await deleteDoc(doc(db, "test", id));
+    getData();
   };
+
+  const createData = async (data) => {
+    console.log(data);
+    const docRef = await addDoc(collection(db, tableType), data);
+    if (docRef.id) getData();
+  };
+
+  const updateData = async (data) => {
+    const docRef = doc(db, tableType, data.id);
+
+    updateDoc(docRef, data)
+      .then((docRef) => {
+        console.log(
+          "A New Document Field has been added to an existing document"
+        );
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    getData();
+  };
+
+  const handleTableType = (type) => {
+    console.log(type);
+    setTableType(type);
+  };
+
   useEffect(() => {
     getData();
-  }, []);
+  }, [tableType]);
 
   return (
     <div className="w-full bg-slate-200 h-screen">
       <Header />
-      <Table list={list} />
+      <div className="flex flex-row">
+        <Sidebar handleType={(type) => handleTableType(type)} />
+        {tableType === "users" ? (
+          <Table
+            list={userList}
+            delete={(id) => deleteData(id)}
+            update={(id) => updateData(id)}
+            tableType={tableType}
+            create={(data) => createData(data)}
+          />
+        ) : (
+          <Table
+            list={productList}
+            delete={(id) => deleteData(id)}
+            update={(data) => updateData(data)}
+            tableType={tableType}
+            create={(data) => createData(data)}
+          />
+        )}
+      </div>
+
       {/* <Modal /> */}
     </div>
   );
