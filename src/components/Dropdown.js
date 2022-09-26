@@ -106,6 +106,7 @@ export const Dropdown = (props) => {
                       <button
                         onClick={() => {
                           props.delete(props.id);
+                          // console.log(props.id);
                         }}
                         className={`${
                           active ? "bg-violet-500 text-white" : "text-gray-900"

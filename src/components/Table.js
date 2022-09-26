@@ -57,7 +57,7 @@ export const Table = (props) => {
                     <Dropdown
                       items={["Edit", "Delete"]}
                       id={data.id}
-                      update={() => handleUpdate(data)}
+                      update={(data) => handleUpdate(data)}
                       delete={(id) => props.delete(id)}
                     />
                   </div>

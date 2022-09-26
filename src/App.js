@@ -68,7 +68,7 @@ function App() {
   };
 
   const deleteData = async (id) => {
-    const res = await deleteDoc(doc(db, "test", id));
+    const res = await deleteDoc(doc(db, "products", id));
     getData();
   };
 
@@ -80,6 +80,8 @@ function App() {
 
   const updateData = async (data) => {
     const docRef = doc(db, tableType, data.id);
+    console.log(tableType, data.id + "asdas");
+    console.log(data);
 
     updateDoc(docRef, data)
       .then((docRef) => {
